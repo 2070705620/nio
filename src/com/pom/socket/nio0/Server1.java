@@ -2,6 +2,7 @@ package com.pom.socket.nio0;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -9,38 +10,65 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-public class Server0 {
-	public static void main(String[] args) throws IOException{
-		try(ServerSocketChannel serverChannel = ServerSocketChannel.open();
-				){
-			serverChannel.bind(new InetSocketAddress(
-					8089), 10);
-			serverChannel.configureBlocking(false);
-			
-			Selector selector = Selector.open();
-			System.out.println(serverChannel.register(selector, SelectionKey.OP_ACCEPT));
-			
-			while(selector.select() > 0) {
+public class Server1 {
+	private ServerSocketChannel serverChannel = null;
+	private int bufferSize = 4096;
+	private ByteBuffer readBuffer = ByteBuffer.allocate(bufferSize);
+	private ByteBuffer writeBuffer = ByteBuffer.allocate(bufferSize);
+	private Selector selector = null;
+	private boolean running = true;
+	
+	public Server1(int port) throws IOException {
+		serverChannel = ServerSocketChannel.open();
+		serverChannel.configureBlocking(false);
+		//绑定端口
+		ServerSocket serverSocket = serverChannel.socket();
+		serverSocket.bind(new InetSocketAddress(port));
+		//serverChannel.bind(new InetSocketAddress(port));
+		
+		System.out.println("服务器已经开启，端口:"+port);
+		
+		selector = Selector.open();
+		
+		//注册accept事件，注册主体是服务器channel
+		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+		
+		new Thread(()->{
+			Debugger.set(1, 1);
+			while(true) {
+				Debugger.sleep(5000);
+			}
+		}) .start();
+		
+	}
+	public void listen() throws IOException {
+		while(running) {
+			if(selector.select() > 0) {
 				Iterator<SelectionKey> iteratorKeys = selector.selectedKeys().iterator();
 				while(iteratorKeys.hasNext()) {
 					SelectionKey key = iteratorKeys.next();
 					iteratorKeys.remove();
 					if(key.isAcceptable()) {
 						SocketChannel channel = ((ServerSocketChannel)key.channel()).accept();
-						System.out.println("accept的:"+key);
+						System.out.println("accept: "+ channel);
 						channel.configureBlocking(false);
+						
+						Debugger.set(2, channel);
+						
 						channel.register(selector, SelectionKey.OP_READ);
+						
+						
 					}
 					if(key.isReadable()) {
 						SocketChannel channel = (SocketChannel)key.channel();
-						System.out.println("readable的:"+key);
-						ByteBuffer buffer = ByteBuffer.allocate(1024);
-						while(channel.read(buffer) > 0) {
-							buffer.flip();
-							System.out.println(new String(buffer.array() ,0 ,buffer.limit()));
-							buffer.clear();
+						//使用前先清洁一下
+						readBuffer.clear();
+						if(channel.read(readBuffer) > 0) {
+							readBuffer.flip();
+							System.out.println(new String(readBuffer.array() ,0 ,readBuffer.limit()));
+							readBuffer.clear();
 						}
-						
+//						channel.shutdownInput();
 						channel.register(selector, SelectionKey.OP_WRITE);
 					}
 					if(key.isWritable()) {
@@ -73,26 +101,28 @@ public class Server0 {
 							sb.append("<a href='https://www.baidu.com'>Baidu百度"+simpleString+"</a>");
 							sb.append("</body>");
 							sb.append("</html>");
-							
-							ByteBuffer buffer = ByteBuffer.wrap(sb.toString().getBytes());
-							channel.write(buffer);
-							
-							channel.close();
-//							channel.register(selector, SelectionKey.OP_READ);
+							//response
+							{
+								byte[]data = sb.toString().getBytes();
+								int length = data.length;
+								int index = 0;
+								while(index < length) {
+									writeBuffer.clear();
+									int nextOffset = Math.min(index + bufferSize, length);
+									writeBuffer.put(data, index, nextOffset - index);
+									writeBuffer.flip();
+									channel.write(writeBuffer);
+									index = nextOffset;
+								}
+//								channel.shutdownOutput();
+							}
+							channel.register(selector, SelectionKey.OP_READ);
 					}
 				}
 			}
-			
-			//3次握手
-			/*SocketChannel socketChannel = serverChannel.accept();
-			System.out.println(socketChannel);
-			ByteBuffer buffer = ByteBuffer.allocate(2);
-			while(socketChannel.read(buffer) > -1) { //read是阻塞的
-				System.out.print(new String(buffer.array()));
-				buffer.flip();
-			}
-			socketChannel.shutdownInput();
-			socketChannel.close();*/
 		}
+	}
+	public static void main(String[] args) throws IOException{
+		new Server1(8090).listen();
 	}
 }
