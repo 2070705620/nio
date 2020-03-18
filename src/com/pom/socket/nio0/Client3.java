@@ -12,14 +12,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class Client3 {
-	private int bufferSize = 4096;
-	private ByteBuffer readBuffer = ByteBuffer.allocate(bufferSize);
-	private ByteBuffer writeBuffer = ByteBuffer.allocate(bufferSize);
 	private SocketChannel channel = null;
 	private Selector selector = null;
-	
-	private boolean running = true;
-	
 	public Client3(String ip, int port) throws IOException {
 		channel = SocketChannel.open();
 		channel.configureBlocking(false);
@@ -27,11 +21,9 @@ public class Client3 {
 		
 		channel.connect(new InetSocketAddress(ip, port));
 		
-		System.out.println("连接？");
-		
 		channel.register(selector, SelectionKey.OP_CONNECT);
 		
-		select: while(selector.select() > 0) {
+		while(selector.select() > 0) {
 			Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
 			while(iterator.hasNext()) {
 				SelectionKey key = iterator.next();
@@ -57,8 +49,6 @@ public class Client3 {
 					channel.shutdownOutput();
 					channel.close();
 					Debugger.file("客户端自己关闭"+channel);
-					
-					break select;
 				}
 			}
 			

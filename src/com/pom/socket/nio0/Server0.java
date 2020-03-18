@@ -10,6 +10,7 @@ import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 public class Server0 {
+	@SuppressWarnings("restriction")
 	public static void main(String[] args) throws IOException{
 		try(ServerSocketChannel serverChannel = ServerSocketChannel.open();
 				){
@@ -17,69 +18,54 @@ public class Server0 {
 					8089), 10);
 			serverChannel.configureBlocking(false);
 			
-			Selector selector = Selector.open();
-			System.out.println(serverChannel.register(selector, SelectionKey.OP_ACCEPT));
+			ByteBuffer readBuffer = ByteBuffer.allocate(1024);
+			ByteBuffer writeBuffer = ByteBuffer.allocate(1024);
 			
+			Selector selector = Selector.open();
+			serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+			
+			Debugger.startDaemon(()->{
+				System.out.println();
+			});
+
 			while(selector.select() > 0) {
 				Iterator<SelectionKey> iteratorKeys = selector.selectedKeys().iterator();
 				while(iteratorKeys.hasNext()) {
 					SelectionKey key = iteratorKeys.next();
+					System.out.println("key: readable["+key.isReadable()+"] writable["+key.isWritable()+"]");
 					iteratorKeys.remove();
 					if(key.isAcceptable()) {
 						SocketChannel channel = ((ServerSocketChannel)key.channel()).accept();
-						System.out.println("accept的:"+key);
 						channel.configureBlocking(false);
 						channel.register(selector, SelectionKey.OP_READ);
+						System.out.println("handshake1 over");
+						Debugger.set(333, channel);
 					}
 					if(key.isReadable()) {
 						SocketChannel channel = (SocketChannel)key.channel();
-						System.out.println("readable的:"+key);
-						ByteBuffer buffer = ByteBuffer.allocate(1024);
-						while(channel.read(buffer) > 0) {
-							buffer.flip();
-							System.out.println(new String(buffer.array() ,0 ,buffer.limit()));
-							buffer.clear();
-						}
-						
-						channel.register(selector, SelectionKey.OP_WRITE);
-					}
-					if(key.isWritable()) {
-						SocketChannel channel = (SocketChannel)key.channel();
-						
-						System.out.println("writable的:"+key);
-						
-						StringBuilder sb = new StringBuilder()
-								.append("HTTP/1.1 200 OK\r\n")
-								.append("Bdpagetype: 2\r\n")
-								.append("Bdqid: 0xccf4c8a10005455a\r\n")
-								.append("Cache-Control: private\r\n")
-								.append("Connection: Keep-Alive\r\n")
-//								.append("Content-Encoding: gzip\r\n")
-								.append("Content-Type: text/html;charset=utf-8\r\n")
-//								.append("Date: Mon, 15 Jul 2019 06:06:49 GMT\r\n")
-//								.append("Expires: Mon, 15 Jul 2019 06:06:48 GMT\r\n")
-								.append("Server: BWS/1.1\r\n")
-								.append("Set-Cookie: BDSVRTM=516; path=/\r\n")
-								.append("Set-Cookie: BD_HOME=1; path=/\r\n")
-								.append("Set-Cookie: H_PS_PSSID=1433_21112_29522_29519_29237_28518_29099_28831_29221_26350_28701; path=/; domain=.baidu.com\r\n")
-								.append("Strict-Transport-Security: max-age=172800\r\n")
-								.append("X-Ua-Compatible: IE=Edge,chrome=1\r\n")
-//								.append("Transfer-Encoding: chunked\r\n")
-								.append("\r\n");
-							sb.append("<html>");
-							sb.append("<meta charset='UTF-8'>");
-							sb.append("<body>");
-							String simpleString = "";
-							sb.append("<a href='https://www.baidu.com'>Baidu百度"+simpleString+"</a>");
-							sb.append("</body>");
-							sb.append("</html>");
-							
-							ByteBuffer buffer = ByteBuffer.wrap(sb.toString().getBytes());
-							channel.write(buffer);
-							
+						if(channel.read(readBuffer) == -1) {
 							channel.close();
-//							channel.register(selector, SelectionKey.OP_READ);
+							System.out.println("客户端关闭");
+							continue; //已经close的不能再做其它判断
+						}else {
+							readBuffer.flip();
+							String body = new String(readBuffer.array() ,0 ,readBuffer.limit());
+							System.out.println("body: " + body);
+							readBuffer.clear();
+							
+							writeBuffer.clear();
+							writeBuffer.put((body + org.apache.commons.lang3.RandomStringUtils.randomNumeric(10)).getBytes());
+							writeBuffer.flip();
+							channel.write(writeBuffer);
+							
+						}
+//						if(Server0Helper.read(selector, (SocketChannel)key.channel(), readBuffer)) {
+//							continue;
+//						}
 					}
+//					if(key.isWritable()) {
+//						Server0Helper.write(selector, (SocketChannel)key.channel(), writeBuffer);
+//					}
 				}
 			}
 			

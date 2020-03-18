@@ -33,5 +33,34 @@
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Administrator/.m2/repository/io/netty/netty-buffer/4.1.29.Final/netty-buffer-4.1.29.Final.jar" sourcepath="C:/Users/Administrator/.m2/repository/io/netty/netty-buffer/4.1.29.Final/netty-buffer-4.1.29.Final-sources.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="test" value="true"/>
+			<attribute name="maven.groupId" value="io.netty"/>
+			<attribute name="maven.artifactId" value="netty-buffer"/>
+			<attribute name="maven.version" value="4.1.29.Final"/>
+			<attribute name="maven.scope" value="runtime"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Administrator/.m2/repository/io/netty/netty-all/4.1.29.Final/netty-all-4.1.29.Final.jar" sourcepath="C:/Users/Administrator/.m2/repository/io/netty/netty-all/4.1.29.Final/netty-all-4.1.29.Final-sources.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="maven.groupId" value="io.netty"/>
+			<attribute name="maven.artifactId" value="netty-all"/>
+			<attribute name="maven.version" value="4.1.29.Final"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Administrator/.m2/repository/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8.jar" sourcepath="C:/Users/Administrator/.m2/repository/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8-sources.jar">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+			<attribute name="javadoc_location" value="jar:file:/C:/Users/Administrator/.m2/repository/org/apache/commons/commons-lang3/3.8/commons-lang3-3.8-javadoc.jar!/"/>
+			<attribute name="maven.groupId" value="org.apache.commons"/>
+			<attribute name="maven.artifactId" value="commons-lang3"/>
+			<attribute name="maven.version" value="3.8"/>
+			<attribute name="maven.scope" value="compile"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
