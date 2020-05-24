@@ -1,12 +1,6 @@
 package com.pom.socket.n3;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-import org.apache.commons.lang3.RandomStringUtils;
-
-import com.pom.socket.n0.InboundB;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -44,6 +38,8 @@ ServerBootstrap bootstrap = new ServerBootstrap();
 		EventLoopGroup  boss = new NioEventLoopGroup(1, new DefaultThreadFactory("boss", true));
 		EventLoopGroup  worker = new NioEventLoopGroup(12, new DefaultThreadFactory("worker", true));
 		
+		EventLoopGroup  business = new NioEventLoopGroup(12, new DefaultThreadFactory("business", true));
+		
 		Debugger.startDaemon(()->{
 			System.out.println();
 		});
@@ -61,7 +57,7 @@ ServerBootstrap bootstrap = new ServerBootstrap();
 					//pipeline.addLast("spitPackage", new LengthFieldBasedFrameDecoder(0xffff, 0, 2));
 					
 					pipeline.addLast(new InboundHandler1());
-					pipeline.addLast(new InboundHandler2());
+					pipeline.addLast(business, new InboundHandler2());
 					//pipeline.addLast("decoder",new StringDecoder());
 //					pipeline.addLast(new SimpleChannelInboundHandler<String>() {
 //						@Override

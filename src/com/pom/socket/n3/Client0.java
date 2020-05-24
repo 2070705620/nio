@@ -52,14 +52,14 @@ public class Client0 {
             	@Override
             	protected void initChannel(SocketChannel ch) throws Exception {
             		ChannelPipeline pip = ch.pipeline();
-            		pip.addLast(new MessageToByteEncoder<byte[]>() {
-            			@Override
-            			protected void encode(ChannelHandlerContext ctx, byte[] msg, ByteBuf out) throws Exception {
-            				System.out.println("发送:" + Arrays.toString(msg));
-            				out.writeBytes(msg);
-            			}
-					});
-            		/*pip.addLast(new MessageToByteEncoder<String>() {
+//            		pip.addLast(new MessageToByteEncoder<byte[]>() {
+//            			@Override
+//            			protected void encode(ChannelHandlerContext ctx, byte[] msg, ByteBuf out) throws Exception {
+//            				System.out.println("发送:" + Arrays.toString(msg));
+//            				out.writeBytes(msg);
+//            			}
+//					});
+            		pip.addLast(new MessageToByteEncoder<String>() {
             			@Override
             			protected void encode(ChannelHandlerContext ctx, String msg, ByteBuf out) throws Exception {
             				out.writeShort(MessageConfig.MAGIC);
@@ -67,7 +67,7 @@ public class Client0 {
             				out.writeShort(body.length);
             				out.writeBytes(body);
             			}
-					});*/
+					});
             		pip.addLast(new StringDecoder());
             	}
 			});
