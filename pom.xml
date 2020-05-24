@@ -4,7 +4,7 @@
   <artifactId>nio</artifactId>
   <version>0.2</version>
   <properties>
-  	<netty.version>4.1.29.Final</netty.version>
+  	<netty.version>4.1.48.Final</netty.version>
   </properties>
   <dependencies>
   	<!-- https://mvnrepository.com/artifact/io.netty/netty-all -->
